@@ -13,26 +13,40 @@ struct ZoomableImage: UIViewRepresentable {
 	// MARK: Props
 	let image: UIImage
 
-	var scale = (1) ... (3.0)
+	var scale = (0.5) ... (3.0)
 	var currentScale = 1.0
 
 	// MARK: - Lifecycle
 	func makeUIView(context: Context) -> PDFView {
 		let pdfView = PDFView()
 
-		guard let pdfPage = PDFPage(image: image) else { return pdfView }
+		let mainScreenSize = UIScreen.main.bounds.size
+
+		let scaledImage: UIImage
+
+		if image.size.width > mainScreenSize.width {
+			scaledImage = image.scaled(to: mainScreenSize)
+		} else {
+			scaledImage = image
+		}
+
+		let scaleFactor = (mainScreenSize.width / scaledImage.size.width) - 0.1
+
+		guard let pdfPage = PDFPage(image: scaledImage) else { return pdfView }
 
 		let document = PDFDocument()
 		document.insert(pdfPage, at: 0)
 
-		pdfView.autoScales = true
 		pdfView.document = document
+		pdfView.autoScales = true
 		pdfView.backgroundColor = .clear
 
 		assert(scale ~= currentScale)
+
 		pdfView.minScaleFactor = scale.lowerBound
-		pdfView.scaleFactor = pdfView.scaleFactorForSizeToFit
+		pdfView.scaleFactor = scaleFactor
 		pdfView.maxScaleFactor = scale.upperBound
+
 
 		return pdfView
 	}

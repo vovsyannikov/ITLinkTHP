@@ -9,12 +9,11 @@ import SwiftUI
 
 @main
 struct ITLinkTHPApp: App {
-
-	private let urls = Bundle.main.loadURLs()
+	@StateObject private var homeViewModel = HomeScreen.ViewModel(networkService: NetworkService.shared)
 
     var body: some Scene {
         WindowGroup {
-			HomeScreen(urls: urls)
+			HomeScreen(viewModel: homeViewModel)
         }
     }
 }

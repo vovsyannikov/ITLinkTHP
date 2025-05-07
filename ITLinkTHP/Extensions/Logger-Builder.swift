@@ -18,4 +18,8 @@ extension Logger {
 	static func utility(category: String = #function) -> Logger {
 		Logger(subsystem: mainSubsystem, category: "Utility: (\(category))")
 	}
+
+	static func viewModel(category: String = #function) -> Logger {
+		Logger(subsystem: mainSubsystem, category: "ViewModel: (\(category))")
+	}
 }

@@ -8,13 +8,16 @@
 import OSLog
 import SwiftUI
 
+@globalActor
 actor NetworkService: Networking {
+	
+	static let shared = NetworkService()
 
 	private let session: URLSession
 	private let logger = Logger.utility()
 
 	// MARK: - Lifecycle
-	fileprivate init() {
+	private init() {
 		let memoryCapacity = 1_024 * 1_024 * 64
 		let diskCapacity = 1_024 * 1_024 * 512
 		let cache = URLCache(memoryCapacity: memoryCapacity, diskCapacity: diskCapacity)
@@ -28,6 +31,19 @@ actor NetworkService: Networking {
 	}
 
 	// MARK: - Actions
+	func fetchURLs() async throws -> [URL] {
+		let url = URL(string:  "https://it-link.ru/test/images.txt")!
+
+		let data = try await fetchData(from: url)
+
+		guard let fileContents = String(data: data, encoding: .utf8)
+		else { throw NetworkError.invalidData }
+
+		return fileContents
+			.components(separatedBy: .newlines)
+			.compactMap(URL.init(string:))
+	}
+
 	func fetchImage(from url: URL) async throws -> Data {
 		let urlRegex = #"https://.+"#
 
@@ -36,6 +52,10 @@ actor NetworkService: Networking {
 			throw URLError(.badURL)
 		}
 
+		return try await fetchData(from: url)
+	}
+
+	private func fetchData(from url: URL) async throws -> Data {
 		let request = URLRequest(url: url, cachePolicy: .returnCacheDataElseLoad, timeoutInterval: 5)
 
 		let (data, response) = try await session.retryingData(for: request)
@@ -48,9 +68,4 @@ actor NetworkService: Networking {
 
 		return data
 	}
-}
-
-// MARK: - Environment Injection
-extension EnvironmentValues {
-	@Entry var networkService: Networking = NetworkService()
 }

@@ -10,6 +10,8 @@ import SwiftUI
 struct ImageScreen: View {
 
 	// MARK: Props
+	@Environment(\.dismiss) private var dismiss
+
 	@State private var isNavBarHidden = false
 	@State private var shouldHideNavBar = false
 
@@ -17,19 +19,38 @@ struct ImageScreen: View {
 
 	// MARK: - Body
 	var body: some View {
-		ZStack {
-			Rectangle()
-				.foregroundStyle(.black)
-				.opacity(isNavBarHidden ? 1 : 0)
-				.ignoresSafeArea()
+		ZStack(alignment: .topTrailing) {
+			ZStack {
+				Rectangle()
+					.foregroundStyle(.black)
+					.opacity(isNavBarHidden ? 1 : 0)
 
-			ZoomableImage(image: image)
-				.simultaneousGesture(
-					TapGesture()
-						.onEnded(updateNavBarVisibility)
-				)
+				ZoomableImage(image: image)
+					.simultaneousGesture(
+						TapGesture()
+							.onEnded(updateNavBarVisibility)
+					)
+			}
+			.ignoresSafeArea()
+
+			if !isNavBarHidden {
+				closeButton
+			}
 		}
-		.navigationBarHidden(isNavBarHidden)
+		.navigationBarHidden(true)
+	}
+
+	// MARK: - Subviews
+	private var closeButton: some View {
+		Button(action: { dismiss() }) {
+			Image(systemName: "xmark")
+				.padding(15)
+				.background(.ultraThinMaterial, in: .circle)
+				.tint(.primary)
+				.padding(10)
+		}
+		.transition(.opacity)
+		.zIndex(1)
 	}
 
 	// MARK: - Actions
@@ -48,5 +69,5 @@ struct ImageScreen: View {
 
 // MARK: - Previews
 #Preview {
-	HomeScreen(urls: Bundle.main.loadURLs())
+	HomeScreen(viewModel: .init(networkService: NetworkService.shared))
 }

@@ -8,5 +8,6 @@
 import Foundation
 
 protocol Networking {
+	func fetchURLs() async throws -> [URL]
 	func fetchImage(from url: URL) async throws -> Data
 }
